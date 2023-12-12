@@ -25,7 +25,7 @@ cartsRouter.post('/', async (req, res) => {
         if(!cartAdded){
             return res.status(400).send({message: 'error: cart not added'});
         }
-        res.send({message: 'Cart Added'});
+        res.send({message: `Cart with id: ${cartAdded.id} was successfuly created`});
     } catch (error) {
         console.error(error);
         return res.status(500).send(error);

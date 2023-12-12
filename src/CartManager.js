@@ -1,11 +1,11 @@
 // import e from 'express';
 import fs from 'fs';
 import productManager from './ProductManager.js';
-
 class CartManager {
     constructor(path) {
         this.path = path;
     }
+
     #generateId = async () => {
         try {
             const carts = await this.getCarts();
@@ -17,6 +17,19 @@ class CartManager {
             console.error(error)
         }
     }
+
+    // Get all carts
+    getCarts = async() => {
+        try {
+            const data = await fs.promises.readFile(this.path, 'utf-8');
+            const carts = JSON.parse(data);
+            return carts;
+        } catch(error) {
+            console.error(error);
+            return [];
+        }
+    } 
+
     // Get Cart By Id
     getCartById = async (cartId) => {
         try {
@@ -29,6 +42,7 @@ class CartManager {
             return false;
         }
     }
+    
     // Add cart
     addCart = async () => {
         try {
@@ -39,7 +53,8 @@ class CartManager {
                 products: []
             });
             await fs.promises.writeFile(this.path, JSON.stringify(carts), 'utf-8');
-            return true;
+            const addedCart = await this.getCartById(cartId);
+            return addedCart;
         } catch (error) {
             console.error(error);
             return false;
@@ -75,44 +90,3 @@ class CartManager {
 }
 const cartManager = new CartManager('./src/data/Cart.json');
 export default cartManager;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Get all carts
-// getCarts = async() => {
-//     try {
-//         const data = await fs.promises.readFile(this.path, 'utf-8');
-//         const carts = JSON.parse(data);
-//         return carts;
-//     } catch(error) {
-//         console.error(error);
-//         return [];
-//     }
-// } 

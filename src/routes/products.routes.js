@@ -52,7 +52,7 @@ productsRouter.put('/:pId', async (req, res) => {
         const { pId } = req.params;
         const updatedProduct = await productManager.updateProduct(+pId, product);
         if(!updatedProduct) {
-            return res.status(404).send({message: 'product not found'})
+            return res.status(404).send({message: 'product not updated'})
         }
         res.send(updatedProduct);
     } catch (error) {

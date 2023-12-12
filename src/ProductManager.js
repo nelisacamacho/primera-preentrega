@@ -5,6 +5,18 @@ class ProductManager {
         this.path = path;
     }
 
+    #generateId = async () => {
+        try {
+            const products = await this.getProducts();
+            if(products.length === 0) return 1;
+            return products[products.length - 1].id + 1;
+        } catch (error) {
+            console.error(error);
+            return {error}
+        }
+    }
+
+    // Add product
     addProduct = async (product) => {
         const { title, description, price, thumbnail, code, stock } = product;
         try {
@@ -17,21 +29,16 @@ class ProductManager {
                 console.log(`Code ${code} already exists, please verify.`);
                 return false;
             }
-            // value = [].concat(value ?? [])
+            
             const newProduct = {
                 id: await this.#generateId(),
                 title, 
                 description, 
                 price,
-                // thumbnail: [...thumbnail], 
-                // thumbnail: [].concat(thumbnail || []).map(String),
-                // thumbnail: [...thumbnail.toString()],
-                thumbnail: Array.from(thumbnail).map(String),
-
+                thumbnail: [].concat(thumbnail || []).map(String),
                 code, 
                 stock,
                 available: true
-
             }
             products.push(newProduct)
             await fs.promises.writeFile(this.path, JSON.stringify(products), 'utf-8');
@@ -42,18 +49,7 @@ class ProductManager {
         }
     }
 
-    #generateId = async () => {
-        try {
-            const products = await this.getProducts();
-            if(products.length === 0) {
-                return 1;
-            }
-            return products[products.length - 1].id + 1;
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
+    // Get all products
     getProducts = async () => {
         try {
             const data = await fs.promises.readFile(this.path, 'utf-8');
@@ -65,6 +61,7 @@ class ProductManager {
         }
     }
     
+    // Get product By Id
     getProductById = async (productId) => {
         try {
             const products = await this.getProducts();
@@ -79,16 +76,23 @@ class ProductManager {
         }
     }
 
+    // Update product
     updateProduct = async (id, values) => {
         try {
             let products = await this.getProducts();
-            const product = await products.find(product => product.id === id);
-            if(!product) {
-                return false;
+            if(values.code) {
+                const [productValue] = products.filter(prod => prod.code === values.code);
+                if(productValue && productValue.id !== id) {
+                    console.error(`Code ${values.code} belongs to product with id: ${productValue.id}, 2 products cannot have same code`);
+                    return false;
+                }
             }
             const productIdx = await products.findIndex(product => product.id === id);
+            if(productIdx === -1) {
+                return false;
+            }
             products[productIdx] = {
-                ...product,
+                ...products[productIdx],
                 ...values,
                 id
             }
@@ -96,25 +100,71 @@ class ProductManager {
             return await this.getProductById(id);
         } catch (error) {
             console.error(error)
-            return { error }
+            return {error}
         }
     }
 
+    // Delete product
     deleteProduct = async (productId) => {
         try {
-            // const isProductActive = products.some(product => product.id === productId);
             const products = await this.getProducts();
-            const product = await this.getProductById(productId);
+            const product = products.find(product => product.id === productId);
             if(!product) return false
             const updateProducts = await products.filter(product => product.id !== productId);
             await fs.promises.writeFile(this.path, JSON.stringify(updateProducts), 'utf-8');
             return true;
         } catch (error) {
             console.error(error)
-            return { error }
+            return {error}
         }
     }
 }
 const productManager = new ProductManager('./src/data/Products.json');
 export default productManager;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// thumbnail: [...thumbnail.toString()],
+// thumbnail: Array.from(thumbnail).map(String),
+// const isProductActive = products.some(product => product.id === productId);
+// const product = await this.getProductById(productId);
